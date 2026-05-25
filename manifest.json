@@ -1,0 +1,18 @@
+{
+  "name": "ວັດພະໄຊ",
+  "short_name": "ວັດພະໄຊ",
+  "description": "ລະບົບຈັດການຄັງຂອງວັດ",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2A1F14",
+  "theme_color": "#7A1B1B",
+  "icons": [
+    {
+      "src": "assets/img/1.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

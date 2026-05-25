@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="25%" r="75%">
+      <stop offset="0%" stop-color="#3D2B1C"/>
+      <stop offset="100%" stop-color="#1A0F08"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="38%" r="52%">
+      <stop offset="0%" stop-color="#D4A040" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#B8862B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD060"/>
+      <stop offset="100%" stop-color="#B8862B"/>
+    </linearGradient>
+    <linearGradient id="gold2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E0B840"/>
+      <stop offset="100%" stop-color="#9A7020"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="96" fill="url(#glow)"/>
+
+  <!-- ── Stupa / That Luang silhouette ── -->
+
+  <!-- Finial tip -->
+  <circle cx="256" cy="74" r="16" fill="url(#gold)"/>
+  <!-- Spire shaft -->
+  <rect x="248" y="88" width="16" height="52" rx="6" fill="url(#gold)"/>
+
+  <!-- Lotus ring under spire -->
+  <ellipse cx="256" cy="144" rx="34" ry="11" fill="#C49030"/>
+  <ellipse cx="256" cy="140" rx="28" ry="8" fill="#E0C060"/>
+
+  <!-- Dome (hemisphere) -->
+  <path d="M 178 212 Q 178 144 256 144 Q 334 144 334 212 Z" fill="url(#gold2)"/>
+  <ellipse cx="256" cy="212" rx="78" ry="20" fill="#C49030"/>
+
+  <!-- Drum / neck -->
+  <rect x="222" y="212" width="68" height="26" rx="5" fill="#B8862B"/>
+  <rect x="218" y="232" width="76" height="8" rx="3" fill="#9A7020"/>
+
+  <!-- Roof overhang (wide hat) -->
+  <rect x="156" y="236" width="200" height="16" rx="6" fill="url(#gold)"/>
+  <!-- Decorative edge -->
+  <rect x="150" y="250" width="212" height="6" rx="3" fill="#9A7020"/>
+
+  <!-- Main temple body -->
+  <rect x="194" y="256" width="124" height="82" rx="5" fill="#B8862B"/>
+
+  <!-- Side windows -->
+  <rect x="204" y="272" width="30" height="30" rx="5" fill="#1A0E08" opacity="0.75"/>
+  <rect x="278" y="272" width="30" height="30" rx="5" fill="#1A0E08" opacity="0.75"/>
+
+  <!-- Central door arch -->
+  <path d="M 240 338 L 240 298 Q 240 278 256 278 Q 272 278 272 298 L 272 338 Z" fill="#1A0E08"/>
+
+  <!-- ── Base tiers (wider each step) ── -->
+  <rect x="170" y="338" width="172" height="20" rx="5" fill="#C49030"/>
+  <rect x="142" y="356" width="228" height="22" rx="6" fill="#A87828"/>
+  <rect x="110" y="376" width="292" height="28" rx="8" fill="#8A6010"/>
+
+  <!-- Ground shadow glow -->
+  <ellipse cx="256" cy="414" rx="172" ry="11" fill="#B8862B" opacity="0.18"/>
+</svg>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>ວັດພະໄຊ · ລະບົບຈັດການຄັງ</title>
+
+  <!-- PWA manifest + icons -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/img/1.jpg" type="image/jpeg" />
+  <link rel="apple-touch-icon" href="assets/img/1.jpg" />
+
+  <!-- Mobile / status bar -->
+  <meta name="theme-color" content="#7A1B1B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ວັດພະໄຊ" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Phetsarath:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <div id="err" style="display:none;padding:20px;font-family:sans-serif;color:#c00;font-size:14px;word-break:break-all"></div>
+
+  <script>
+    window.addEventListener('error', function(e) {
+      var el = document.getElementById('err');
+      el.style.display = 'block';
+      el.innerHTML += '<b>' + (e.message || e.type) + '</b><br><small>' + (e.filename || '') + ' L' + (e.lineno || '') + '</small><hr>';
+    }, true);
+  </script>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <script async src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="store.js"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="page-dashboard.jsx"></script>
+  <script type="text/babel" src="page-manage.jsx"></script>
+  <script type="text/babel" src="page-report.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
