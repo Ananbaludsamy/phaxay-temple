@@ -8,14 +8,7 @@ const CURRENCIES = [
   { code: 'yuan', label: 'ຢວນ',   symbol: '¥',  cls: 'yuan', full: 'ຢວນຈີນ (CNY)' },
 ];
 
-// ============================================================
-// JSONBin.io config — ໃສ່ຄ່າຂອງທ່ານທີ່ນີ້
-// ສ້າງ account ຟຣີທີ່ https://jsonbin.io
-// ============================================================
-const JSONBIN_KEY = '$2a$10$zaWRORGGGhpfcyt7kxs5R.25GLYImdOHXpA3mfGLwlu.p3qicEmj2';   // X-Master-Key
-const JSONBIN_BIN = '6a13dd956610dd3ae89f8eb2';       // Bin ID
-const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`;
-// ============================================================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRGFYAU9pi5s-0R8GuYpgN7DtqoE-gxQT8Ta54iZ-gx5G3uu2TSWEltsliHbb62bOn/exec';
 
 const DEFAULT_STORE = { donors: [], expenseItemsSmall: [], smallIncome: [], smallExpense: [], bigIncome: [], bigExpense: [] };
 
@@ -23,14 +16,11 @@ async function loadStore() {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(JSONBIN_URL + '/latest', {
-      headers: { 'X-Master-Key': JSONBIN_KEY },
-      signal: controller.signal,
-    });
+    const res = await fetch(SCRIPT_URL, { signal: controller.signal });
     clearTimeout(timer);
     if (res.ok) {
-      const json = await res.json();
-      return json.record || DEFAULT_STORE;
+      const data = await res.json();
+      return data || DEFAULT_STORE;
     }
   } catch (e) {}
   return DEFAULT_STORE;
@@ -41,12 +31,9 @@ function saveStore(data) {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
-      await fetch(JSONBIN_URL, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': JSONBIN_KEY,
-        },
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(data),
       });
     } catch (e) {}
