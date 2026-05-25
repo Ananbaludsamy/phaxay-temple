@@ -2,7 +2,7 @@
   "name": "ວັດພະໄຊ",
   "short_name": "ວັດພະໄຊ",
   "description": "ລະບົບຈັດການຄັງຂອງວັດ",
-  "start_url": "/",
+  "start_url": "/phaxay-temple/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#2A1F14",
