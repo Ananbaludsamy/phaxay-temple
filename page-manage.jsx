@@ -52,6 +52,7 @@ function SmallIncomePage({ store, setStore, toast }) {
   };
 
   const remove = (id) => {
+    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
     setStore({ ...store, smallIncome: store.smallIncome.filter(r => r.id !== id) });
     toast('ລຶບລາຍການແລ້ວ');
   };
@@ -236,6 +237,7 @@ function SmallExpensePage({ store, setStore, toast }) {
   };
 
   const remove = (id) => {
+    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
     setStore({ ...store, smallExpense: store.smallExpense.filter(r => r.id !== id) });
     toast('ລຶບລາຍການແລ້ວ');
   };
@@ -415,6 +417,7 @@ function BigIncomePage({ store, setStore, toast }) {
   };
 
   const remove = (id) => {
+    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
     setStore({ ...store, bigIncome: store.bigIncome.filter(r => r.id !== id) });
     toast('ລຶບລາຍການແລ້ວ');
   };
@@ -578,6 +581,7 @@ function BigExpensePage({ store, setStore, toast }) {
   };
 
   const remove = (id) => {
+    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
     setStore({ ...store, bigExpense: store.bigExpense.filter(r => r.id !== id) });
     toast('ລຶບລາຍການແລ້ວ');
   };
