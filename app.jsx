@@ -104,7 +104,7 @@ function App() {
           ))}
         </nav>
         <div className="foot">
-          ຂໍ້ມູນບັນທຶກໃນ db.json · ເວີຊັ່ນ 1.0
+          ພັດທະນາໂດຍ ພຣະ ອານັນ ບາລັດສະມີ ** 2026 **
         </div>
       </aside>
 
