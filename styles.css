@@ -40,13 +40,14 @@ input, select, textarea { font-family: inherit; font-size: 16px; color: var(--in
   min-height: 100vh;
   background: var(--bg);
   position: relative;
-  padding-bottom: 32px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
 }
 
 .topbar {
   position: sticky; top: 0; z-index: 30;
   display: flex; align-items: center; gap: 12px;
   padding: 14px 16px;
+  padding-top: calc(14px + env(safe-area-inset-top));
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
