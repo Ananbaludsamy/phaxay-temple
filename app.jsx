@@ -14,9 +14,9 @@ function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [toastEl, showToast]  = useToast();
 
-  // load from db.json on mount
+  // load on mount: use cache immediately, sync from GAS in background
   useEffect(() => {
-    window.TF.loadStore().then(data => setStore(data));
+    window.TF.loadStore((fresh) => setStore(fresh)).then(data => setStore(data));
   }, []);
 
   // save to db.json whenever store changes

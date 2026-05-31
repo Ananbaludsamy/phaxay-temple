@@ -11,23 +11,59 @@ const CURRENCIES = [
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRGFYAU9pi5s-0R8GuYpgN7DtqoE-gxQT8Ta54iZ-gx5G3uu2TSWEltsliHbb62bOn/exec';
 
 const DEFAULT_STORE = { donors: [], expenseItemsSmall: [], smallIncome: [], smallExpense: [], bigIncome: [], bigExpense: [] };
+const CACHE_KEY = 'tf_store_v1';
 
-async function loadStore() {
+let saveTimer = null;
+let storeDirty = false;
+
+function gasFetch(signal) {
+  return fetch(SCRIPT_URL, { signal });
+}
+
+async function loadStore(onUpdate) {
+  const raw = localStorage.getItem(CACHE_KEY);
+  if (raw) {
+    try {
+      const cached = JSON.parse(raw);
+      storeDirty = false;
+      // Return cache immediately; fetch fresh in background
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
+      gasFetch(ctrl.signal)
+        .then(async res => {
+          clearTimeout(t);
+          if (!res.ok || storeDirty) return;
+          const fresh = await res.json();
+          if (fresh) {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+            onUpdate && onUpdate(fresh);
+          }
+        })
+        .catch(() => { clearTimeout(t); });
+      return cached;
+    } catch (e) {}
+  }
+
+  // No cache — must wait for GAS
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(SCRIPT_URL, { signal: controller.signal });
-    clearTimeout(timer);
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 10000);
+    const res = await gasFetch(ctrl.signal);
+    clearTimeout(t);
     if (res.ok) {
       const data = await res.json();
-      return data || DEFAULT_STORE;
+      if (data) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        return data;
+      }
     }
   } catch (e) {}
   return DEFAULT_STORE;
 }
 
-let saveTimer = null;
 function saveStore(data) {
+  storeDirty = true;
+  localStorage.setItem(CACHE_KEY, JSON.stringify(data)); // instant local save
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
