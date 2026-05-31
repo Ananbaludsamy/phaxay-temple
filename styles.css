@@ -253,6 +253,13 @@ input, select, textarea { font-family: inherit; font-size: 16px; color: var(--in
   color: var(--ink-3);
   cursor: not-allowed;
 }
+.field .control[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 46px;
+  line-height: 1.45;
+  padding: 11px 12px;
+}
 .field .control.select { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%235B4A37' d='M6 8L0 0h12z'/></svg>"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
 .field.either {
   background: var(--bg-soft);
