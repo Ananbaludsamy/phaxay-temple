@@ -37,14 +37,11 @@ function SmallIncomePage({ store, setStore, toast }) {
       toast('ກະລຸນາປ້ອນຈຳນວນເງິນຢ່າງໜ້ອຍ 1 ສະກຸນ'); return;
     }
     const values = { date, donor: finalDonor, kip: Number(amts.kip)||0, baht: Number(amts.baht)||0, usd: Number(amts.usd)||0, yuan: Number(amts.yuan)||0 };
-    const nextDonors = (!useDropdown && nameI.trim() && !store.donors.includes(nameI.trim()))
-      ? [nameI.trim(), ...store.donors] : store.donors;
-
     if (editId) {
-      setStore({ ...store, smallIncome: store.smallIncome.map(r => r.id === editId ? { ...r, ...values } : r), donors: nextDonors });
+      setStore({ ...store, smallIncome: store.smallIncome.map(r => r.id === editId ? { ...r, ...values } : r) });
       toast('ອັບເດດລາຍຮັບແລ້ວ');
     } else {
-      setStore({ ...store, smallIncome: [{ id: uid(), ...values }, ...store.smallIncome], donors: nextDonors });
+      setStore({ ...store, smallIncome: [{ id: uid(), ...values }, ...store.smallIncome] });
       setPage(1);
       toast('ບັນທຶກລາຍຮັບສຳເລັດ');
     }
@@ -222,14 +219,11 @@ function SmallExpensePage({ store, setStore, toast }) {
       toast('ກະລຸນາປ້ອນຈຳນວນເງິນຢ່າງໜ້ອຍ 1 ສະກຸນ'); return;
     }
     const values = { date, item: final, qty: Number(qty)||1, kip: Number(amts.kip)||0, baht: Number(amts.baht)||0, usd: Number(amts.usd)||0, yuan: Number(amts.yuan)||0 };
-    const nextItems = (!useDropdown && nameI.trim() && !store.expenseItemsSmall.includes(nameI.trim()))
-      ? [nameI.trim(), ...store.expenseItemsSmall] : store.expenseItemsSmall;
-
     if (editId) {
-      setStore({ ...store, smallExpense: store.smallExpense.map(r => r.id === editId ? { ...r, ...values } : r), expenseItemsSmall: nextItems });
+      setStore({ ...store, smallExpense: store.smallExpense.map(r => r.id === editId ? { ...r, ...values } : r) });
       toast('ອັບເດດລາຍຈ່າຍແລ້ວ');
     } else {
-      setStore({ ...store, smallExpense: [{ id: uid(), ...values }, ...store.smallExpense], expenseItemsSmall: nextItems });
+      setStore({ ...store, smallExpense: [{ id: uid(), ...values }, ...store.smallExpense] });
       setPage(1);
       toast('ບັນທຶກລາຍຈ່າຍສຳເລັດ');
     }
