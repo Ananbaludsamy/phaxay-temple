@@ -20,24 +20,7 @@ function gasFetch(signal) {
   return fetch(SCRIPT_URL, { signal });
 }
 
-async function fetchLists() {
-  try {
-    const res = await fetch('db.json');
-    if (res.ok) {
-      const d = await res.json();
-      return { donors: d.donors || [], expenseItemsSmall: d.expenseItemsSmall || [] };
-    }
-  } catch (e) {}
-  return { donors: [], expenseItemsSmall: [] };
-}
-
-function mergeWithLists(txns, lists) {
-  return { ...lists, ...txns };
-}
-
 async function loadStore(onUpdate) {
-  const lists = await fetchLists();
-
   const raw = localStorage.getItem(CACHE_KEY);
   if (raw) {
     try {
@@ -51,13 +34,12 @@ async function loadStore(onUpdate) {
           if (!res.ok || storeDirty) return;
           const fresh = await res.json();
           if (fresh) {
-            const merged = mergeWithLists(fresh, lists);
-            localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
-            onUpdate && onUpdate(merged);
+            localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+            onUpdate && onUpdate(fresh);
           }
         })
         .catch(() => { clearTimeout(t); });
-      return mergeWithLists(cached, lists);
+      return cached;
     } catch (e) {}
   }
 
@@ -70,13 +52,12 @@ async function loadStore(onUpdate) {
     if (res.ok) {
       const data = await res.json();
       if (data) {
-        const merged = mergeWithLists(data, lists);
-        localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
-        return merged;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        return data;
       }
     }
   } catch (e) {}
-  return mergeWithLists(DEFAULT_STORE, lists);
+  return DEFAULT_STORE;
 }
 
 let onSaveError = null;
