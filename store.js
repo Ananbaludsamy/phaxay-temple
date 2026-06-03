@@ -36,7 +36,13 @@ async function loadStore(onUpdate) {
         .then(async res => {
           clearTimeout(t);
           if (!res.ok || storeDirty) return;
-          const fresh = safeStore(await res.json());
+          const gas = await res.json();
+          const fresh = {
+            ...safeStore(gas),
+            // Keep cached lists if GAS doesn't provide them (pre-redeploy or old format)
+            donors: (gas.donors && gas.donors.length) ? gas.donors : cached.donors,
+            expenseItemsSmall: (gas.expenseItemsSmall && gas.expenseItemsSmall.length) ? gas.expenseItemsSmall : cached.expenseItemsSmall,
+          };
           localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
           onUpdate && onUpdate(fresh);
         })
