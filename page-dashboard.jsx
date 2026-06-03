@@ -133,6 +133,15 @@ function Dashboard({ store, go }) {
         </div>
       ))}
 
+      {/* ── Staff card ── */}
+      <div className="db-staff">
+        <img className="db-staff-img" src="assets/img/monk.jpg" alt="ພຣະ ວິລະກອນ" />
+        <div className="db-staff-info">
+          <div className="db-staff-role">ຜູ້ບັນທຶກຂໍ້ມູນ</div>
+          <div className="db-staff-name">ພຣະ ວິລະກອນ ປ່ຽງປັນຍາ</div>
+        </div>
+      </div>
+
       {/* ── Monthly strip ── */}
       <div className="db-sec-label">
         <span className="eyebrow">ລາຍເດືອນ</span>
