@@ -61,18 +61,27 @@ async function loadStore(onUpdate) {
   return DEFAULT_STORE;
 }
 
+let onSaveError = null;
+
+function onSaveErrorSet(fn) { onSaveError = fn; }
+
 function saveStore(data) {
   storeDirty = true;
-  localStorage.setItem(CACHE_KEY, JSON.stringify(data)); // instant local save
+  localStorage.setItem(CACHE_KEY, JSON.stringify(data));
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(data),
       });
-    } catch (e) {}
+      // no-cors returns opaque response — can't check res.ok, but doPost runs
+    } catch (e) {
+      console.error('[saveStore] failed:', e);
+      onSaveError && onSaveError(e);
+    }
   }, 400);
 }
 
@@ -110,5 +119,5 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-window.TF = { CURRENCIES, loadStore, saveStore, uid, fmt, fmtDate, sumCurr, ymKey, ymLabel, todayISO };
+window.TF = { CURRENCIES, loadStore, saveStore, onSaveErrorSet, uid, fmt, fmtDate, sumCurr, ymKey, ymLabel, todayISO };
 })();

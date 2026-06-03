@@ -14,14 +14,23 @@ function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [toastEl, showToast]  = useToast();
 
+  const initialized = useRef(false);
+
   // load on mount: use cache immediately, sync from GAS in background
   useEffect(() => {
-    window.TF.loadStore((fresh) => setStore(fresh)).then(data => setStore(data));
+    window.TF.loadStore((fresh) => setStore(fresh)).then(data => {
+      setStore(data);
+      // setTimeout ensures the [store] effect runs first (skips save), THEN we arm it
+      setTimeout(() => { initialized.current = true; }, 0);
+    });
+    window.TF.onSaveErrorSet((err) => {
+      showToast('ບໍ່ສາມາດບັນທຶກ: ' + (err.message || 'network error'));
+    });
   }, []);
 
-  // save to db.json whenever store changes
+  // save only after initial load is complete (initialized.current guards the first render)
   useEffect(() => {
-    if (store) window.TF.saveStore(store);
+    if (store && initialized.current) window.TF.saveStore(store);
   }, [store]);
 
   const go = (r) => { setRoute(r); setNavOpen(false); window.scrollTo({ top: 0 }); };
