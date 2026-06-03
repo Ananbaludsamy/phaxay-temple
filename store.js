@@ -20,11 +20,15 @@ function gasFetch(signal) {
   return fetch(SCRIPT_URL, { signal });
 }
 
+function safeStore(data) {
+  return { ...DEFAULT_STORE, ...data };
+}
+
 async function loadStore(onUpdate) {
   const raw = localStorage.getItem(CACHE_KEY);
   if (raw) {
     try {
-      const cached = JSON.parse(raw);
+      const cached = safeStore(JSON.parse(raw));
       storeDirty = false;
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 10000);
@@ -32,11 +36,9 @@ async function loadStore(onUpdate) {
         .then(async res => {
           clearTimeout(t);
           if (!res.ok || storeDirty) return;
-          const fresh = await res.json();
-          if (fresh) {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
-            onUpdate && onUpdate(fresh);
-          }
+          const fresh = safeStore(await res.json());
+          localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+          onUpdate && onUpdate(fresh);
         })
         .catch(() => { clearTimeout(t); });
       return cached;
@@ -50,11 +52,9 @@ async function loadStore(onUpdate) {
     const res = await gasFetch(ctrl.signal);
     clearTimeout(t);
     if (res.ok) {
-      const data = await res.json();
-      if (data) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-        return data;
-      }
+      const data = safeStore(await res.json());
+      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      return data;
     }
   } catch (e) {}
   return DEFAULT_STORE;
