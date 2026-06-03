@@ -20,13 +20,29 @@ function gasFetch(signal) {
   return fetch(SCRIPT_URL, { signal });
 }
 
+async function fetchLists() {
+  try {
+    const res = await fetch('db.json');
+    if (res.ok) {
+      const d = await res.json();
+      return { donors: d.donors || [], expenseItemsSmall: d.expenseItemsSmall || [] };
+    }
+  } catch (e) {}
+  return { donors: [], expenseItemsSmall: [] };
+}
+
+function mergeWithLists(txns, lists) {
+  return { ...lists, ...txns };
+}
+
 async function loadStore(onUpdate) {
+  const lists = await fetchLists();
+
   const raw = localStorage.getItem(CACHE_KEY);
   if (raw) {
     try {
       const cached = JSON.parse(raw);
       storeDirty = false;
-      // Return cache immediately; fetch fresh in background
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 10000);
       gasFetch(ctrl.signal)
@@ -35,12 +51,13 @@ async function loadStore(onUpdate) {
           if (!res.ok || storeDirty) return;
           const fresh = await res.json();
           if (fresh) {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
-            onUpdate && onUpdate(fresh);
+            const merged = mergeWithLists(fresh, lists);
+            localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+            onUpdate && onUpdate(merged);
           }
         })
         .catch(() => { clearTimeout(t); });
-      return cached;
+      return mergeWithLists(cached, lists);
     } catch (e) {}
   }
 
@@ -53,12 +70,13 @@ async function loadStore(onUpdate) {
     if (res.ok) {
       const data = await res.json();
       if (data) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-        return data;
+        const merged = mergeWithLists(data, lists);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+        return merged;
       }
     }
   } catch (e) {}
-  return DEFAULT_STORE;
+  return mergeWithLists(DEFAULT_STORE, lists);
 }
 
 let onSaveError = null;
@@ -71,13 +89,19 @@ function saveStore(data) {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
+      // Only sync transaction arrays — donors/expenseItemsSmall are managed via db.json
+      const txns = {
+        smallIncome: data.smallIncome,
+        smallExpense: data.smallExpense,
+        bigIncome: data.bigIncome,
+        bigExpense: data.bigExpense,
+      };
       await fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(txns),
       });
-      // no-cors returns opaque response — can't check res.ok, but doPost runs
     } catch (e) {
       console.error('[saveStore] failed:', e);
       onSaveError && onSaveError(e);
