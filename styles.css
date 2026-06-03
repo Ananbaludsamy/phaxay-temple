@@ -513,6 +513,15 @@ input, select, textarea { font-family: inherit; font-size: 16px; color: var(--in
   font-family: 'Phetsarath', sans-serif;
   font-size: 17px; font-weight: 700; color: var(--ink);
 }
+.img-modal {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,.85); display: grid; place-items: center;
+  cursor: pointer; animation: fadeIn .15s ease;
+}
+.img-modal img {
+  max-width: 90vw; max-height: 90vh;
+  border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,.5);
+}
 
 /* section label */
 .db-sec-label {

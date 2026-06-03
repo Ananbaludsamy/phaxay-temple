@@ -2,6 +2,7 @@
 const { useMemo: useMemoDB } = React;
 
 function Dashboard({ store, go }) {
+  const [imgOpen, setImgOpen] = useState(false);
   const smallIn  = sumCurr(store.smallIncome);
   const smallOut = sumCurr(store.smallExpense);
   const bigIn    = sumCurr(store.bigIncome);
@@ -135,12 +136,18 @@ function Dashboard({ store, go }) {
 
       {/* ── Staff card ── */}
       <div className="db-staff">
-        <img className="db-staff-img" src="assets/img/monk.jpg" alt="ພຣະ ວິລະກອນ" />
+        <img className="db-staff-img" src="assets/img/monk.jpg" alt="ພຣະ ວິລະກອນ"
+          onClick={() => setImgOpen(true)} style={{ cursor: 'pointer' }} />
         <div className="db-staff-info">
           <div className="db-staff-role">ຜູ້ບັນທຶກຂໍ້ມູນ</div>
           <div className="db-staff-name">ພຣະ ວິລະກອນ ປ່ຽງປັນຍາ</div>
         </div>
       </div>
+      {imgOpen && (
+        <div className="img-modal" onClick={() => setImgOpen(false)}>
+          <img src="assets/img/monk.jpg" alt="ພຣະ ວິລະກອນ" />
+        </div>
+      )}
 
       {/* ── Monthly strip ── */}
       <div className="db-sec-label">
