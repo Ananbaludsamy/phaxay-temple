@@ -12,6 +12,8 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRGFYAU9pi5s-0R8GuY
 
 const DEFAULT_STORE = { donors: [], expenseItemsSmall: [], smallIncome: [], smallExpense: [], bigIncome: [], bigExpense: [] };
 const CACHE_KEY = 'tf_store_v1';
+const DIRTY_TS_KEY = 'tf_dirty_ts';
+const DIRTY_GRACE_MS = 30000; // 30 วินาทีหลัง save ล่าสุด ไม่ให้ GAS เขียนทับ
 
 let saveTimer = null;
 let storeDirty = false;
@@ -35,7 +37,9 @@ async function loadStore(onUpdate) {
       gasFetch(ctrl.signal)
         .then(async res => {
           clearTimeout(t);
-          if (!res.ok || storeDirty) return;
+          const dirtyTs = Number(localStorage.getItem(DIRTY_TS_KEY) || 0);
+          const recentlySaved = Date.now() - dirtyTs < DIRTY_GRACE_MS;
+          if (!res.ok || storeDirty || recentlySaved) return;
           const gas = await res.json();
           const fresh = {
             ...safeStore(gas),
@@ -73,6 +77,7 @@ function onSaveErrorSet(fn) { onSaveError = fn; }
 function saveStore(data) {
   storeDirty = true;
   localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  localStorage.setItem(DIRTY_TS_KEY, String(Date.now()));
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
