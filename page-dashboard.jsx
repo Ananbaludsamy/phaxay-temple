@@ -152,20 +152,20 @@ function Dashboard({ store, go }) {
       {/* ── Monthly strip ── */}
       <div className="db-sec-label">
         <span className="eyebrow">ລາຍເດືອນ</span>
-        <span className="db-sec-hint">ໜ່ວຍ: ບາດ</span>
+        <span className="db-sec-hint">ໜ່ວຍ: ກີບ</span>
       </div>
       {months.length === 0 ? (
         <Empty text="ຍັງບໍ່ມີຂໍ້ມູນລາຍເດືອນ" />
       ) : (
         <div className="month-strip">
           {months.map(m => {
-            const net = m.in.baht - m.out.baht;
+            const net = m.in.kip - m.out.kip;
             return (
               <div className={`m ${m.ym === curYm ? 'current' : ''}`} key={m.ym}>
                 <div className="mn">{ymLabel(m.ym)}{m.ym === curYm && <span className="m-now">ນີ້</span>}</div>
-                <div className="mv" style={{ color: 'var(--green)' }}>+{fmt(m.in.baht)}</div>
-                <div className="mv" style={{ color: 'var(--rose)', fontSize: 12 }}>−{fmt(m.out.baht)}</div>
-                <div className={`mb ${net >= 0 ? 'pos' : 'neg'}`}>{fmt(net)} ฿</div>
+                <div className="mv" style={{ color: 'var(--green)' }}>+{fmt(m.in.kip)}</div>
+                <div className="mv" style={{ color: 'var(--rose)', fontSize: 12 }}>−{fmt(m.out.kip)}</div>
+                <div className={`mb ${net >= 0 ? 'pos' : 'neg'}`}>{fmt(net)} ₭</div>
               </div>
             );
           })}

@@ -27,7 +27,7 @@ function ReportPage({ store }) {
       .sort((a,b) => a.ym.localeCompare(b.ym));
   }, [store]);
 
-  const maxBaht = Math.max(1, ...monthly.flatMap(m => [m.in.baht, m.out.baht]));
+  const maxKip = Math.max(1, ...monthly.flatMap(m => [m.in.kip, m.out.kip]));
 
   return (
     <div className="page">
@@ -191,7 +191,7 @@ function ReportPage({ store }) {
         <div className="section">
           <div className="s-head">
             <h3>ປຽບທຽບລາຍເດືອນ</h3>
-            <span className="meta">ໜ່ວຍ: ບາດ</span>
+            <span className="meta">ໜ່ວຍ: ກີບ</span>
           </div>
           <div className="s-body">
             {monthly.length === 0 ? (
@@ -200,11 +200,11 @@ function ReportPage({ store }) {
               <div className="bar-row" key={m.ym}>
                 <div className="bn">{ymLabel(m.ym)}</div>
                 <div className="bars">
-                  <div className="bar"><div className="fill in"  style={{ width: `${(m.in.baht / maxBaht) * 100}%` }} /></div>
-                  <div className="bar"><div className="fill out" style={{ width: `${(m.out.baht / maxBaht) * 100}%` }} /></div>
+                  <div className="bar"><div className="fill in"  style={{ width: `${(m.in.kip / maxKip) * 100}%` }} /></div>
+                  <div className="bar"><div className="fill out" style={{ width: `${(m.out.kip / maxKip) * 100}%` }} /></div>
                   <div className="vals">
-                    <span className="v in">+{fmt(m.in.baht)}</span>
-                    <span className="v out">-{fmt(m.out.baht)}</span>
+                    <span className="v in">+{fmt(m.in.kip)}</span>
+                    <span className="v out">-{fmt(m.out.kip)}</span>
                   </div>
                 </div>
               </div>
