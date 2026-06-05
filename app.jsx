@@ -66,7 +66,7 @@ function App() {
           <div className="title">{current.label}</div>
         </div>
         <div className="spacer" />
-        <div className="crest" title="ວັດ">ວ</div>
+        <img className="crest" src="assets/img/1.jpg" alt="ວັດ" title="ວັດ" />
       </div>
 
       {/* Pages */}
@@ -81,7 +81,7 @@ function App() {
       <div className={`scrim ${navOpen ? 'open' : ''}`} onClick={() => setNavOpen(false)} />
       <aside className={`sidebar ${navOpen ? 'open' : ''}`}>
         <div className="brand">
-          <div className="crest">ວ</div>
+          <img className="crest" src="assets/img/1.jpg" alt="ວັດ" />
           <div>
             <div className="name">ວັດພະໄຊ</div>
             <div className="sub">ລະບົບຈັດການຄັງ ວັດພະໄຊ</div>

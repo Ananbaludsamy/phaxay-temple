@@ -66,11 +66,9 @@ input, select, textarea { font-family: inherit; font-size: 16px; color: var(--in
 .topbar .crest {
   width: 36px; height: 36px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, var(--gold-soft), var(--gold));
-  display: grid; place-items: center;
-  color: var(--primary);
-  font-family: 'Phetsarath', sans-serif; font-weight: 700; font-size: 16px;
+  object-fit: cover;
   border: 1px solid var(--gold);
+  flex-shrink: 0;
 }
 
 /* ======= Sidebar ======= */
@@ -104,10 +102,9 @@ input, select, textarea { font-family: inherit; font-size: 16px; color: var(--in
 .sidebar .brand .crest {
   width: 44px; height: 44px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, var(--gold-soft), var(--gold));
-  display: grid; place-items: center;
-  color: var(--primary); font-family: 'Phetsarath', sans-serif; font-weight: 700; font-size: 20px;
+  object-fit: cover;
   border: 1px solid var(--gold);
+  flex-shrink: 0;
 }
 .sidebar .brand .name { font-family: 'Phetsarath', sans-serif; font-size: 18px; font-weight: 600; }
 .sidebar .brand .sub { font-size: 12px; color: var(--ink-3); }
