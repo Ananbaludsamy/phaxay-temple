@@ -12,6 +12,7 @@ function App() {
   const [store, setStore]     = useState(null);   // null = ກຳລັງໂຫຼດ
   const [route, setRoute]     = useState('home');
   const [navOpen, setNavOpen] = useState(false);
+  const [crestOpen, setCrestOpen] = useState(false);
   const [toastEl, showToast]  = useToast();
 
   // load on mount: use cache immediately, sync from GAS in background
@@ -66,7 +67,7 @@ function App() {
           <div className="title">{current.label}</div>
         </div>
         <div className="spacer" />
-        <img className="crest" src="assets/img/1.jpg" alt="ວັດ" title="ວັດ" />
+        <img className="crest" src="assets/img/1.jpg" alt="ວັດ" title="ວັດ" style={{ cursor: 'pointer' }} onClick={() => setCrestOpen(true)} />
       </div>
 
       {/* Pages */}
@@ -81,7 +82,7 @@ function App() {
       <div className={`scrim ${navOpen ? 'open' : ''}`} onClick={() => setNavOpen(false)} />
       <aside className={`sidebar ${navOpen ? 'open' : ''}`}>
         <div className="brand">
-          <img className="crest" src="assets/img/1.jpg" alt="ວັດ" />
+          <img className="crest" src="assets/img/1.jpg" alt="ວັດ" style={{ cursor: 'pointer' }} onClick={() => setCrestOpen(true)} />
           <div>
             <div className="name">ວັດພະໄຊ</div>
             <div className="sub">ລະບົບຈັດການຄັງ ວັດພະໄຊ</div>
@@ -112,6 +113,11 @@ function App() {
         </div>
       </aside>
 
+      {crestOpen && (
+        <div className="img-modal" onClick={() => setCrestOpen(false)}>
+          <img src="assets/img/1.jpg" alt="ວັດພະໄຊ" />
+        </div>
+      )}
       {toastEl}
     </div>
   );
