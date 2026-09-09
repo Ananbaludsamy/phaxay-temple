@@ -10,7 +10,14 @@
       "Bash(curl -s -D - -o /dev/null -X POST -H 'Content-Type: text/plain' -H 'Content-Length: 10' --data test https://script.google.com/macros/s/AKfycbzRGFYAU9pi5s-0R8GuYpgN7DtqoE-gxQT8Ta54iZ-gx5G3uu2TSWEltsliHbb62bOn/exec)",
       "Bash(node -e ' *)",
       "Bash(Remove-Item \"e:\\\\phaxay\\\\seed.html\")",
-      "Bash(dir \"e:\\\\phaxay\\\\assets\\\\img\\\\\" 2>/dev/null)"
+      "Bash(dir \"e:\\\\phaxay\\\\assets\\\\img\\\\\" 2>/dev/null)",
+      "PowerShell(New-Item -ItemType Directory -Force \"e:\\\\phaxay\\\\lib\")",
+      "PowerShell(Invoke-WebRequest -Uri \"https://unpkg.com/react@18.3.1/umd/react.production.min.js\" -OutFile \"e:\\\\phaxay\\\\lib\\\\react.production.min.js\" -UseBasicParsing)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js\" -OutFile \"e:\\\\phaxay\\\\lib\\\\react-dom.production.min.js\" -UseBasicParsing)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://unpkg.com/@babel/standalone@7.29.0/babel.min.js\" -OutFile \"e:\\\\phaxay\\\\lib\\\\babel.min.js\" -UseBasicParsing)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js\" -OutFile \"e:\\\\phaxay\\\\lib\\\\xlsx.full.min.js\" -UseBasicParsing)",
+      "PowerShell(Get-ChildItem \"e:\\\\phaxay\\\\lib\" | Select-Object Name, @{N='KB';E={[math]::Round\\($_.Length/1KB\\)}})",
+      "PowerShell(Get-ChildItem \"e:\\\\phaxay\\\\assets\" -Recurse | Select-Object FullName, @{N='KB';E={[math]::Round\\($_.Length/1KB\\)}})"
     ]
   }
 }
