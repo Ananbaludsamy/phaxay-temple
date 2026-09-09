@@ -17,10 +17,11 @@ function App() {
 
   // load on mount: use cache immediately, sync from GAS in background
   useEffect(() => {
-    window.TF.loadStore((fresh) => setStore(fresh)).then(data => setStore(data));
-    window.TF.onSaveErrorSet((err) => {
-      showToast('ບໍ່ສາມາດບັນທຶກ: ' + (err.message || 'network error'));
+    window.TF.setSyncHandlers({
+      error: (msg) => showToast('⚠️ ' + msg),
+      info:  (msg) => showToast(msg),
     });
+    window.TF.loadStore((fresh) => setStore(fresh)).then(data => setStore(data));
   }, []);
 
   // pages call this instead of setStore — only user-initiated changes reach saveStore

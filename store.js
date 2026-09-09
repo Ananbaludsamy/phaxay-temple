@@ -13,95 +13,183 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRGFYAU9pi5s-0R8GuY
 const DEFAULT_STORE = { donors: [], expenseItemsSmall: [], smallIncome: [], smallExpense: [], bigIncome: [], bigExpense: [] };
 const CACHE_KEY = 'tf_store_v1';
 const DIRTY_TS_KEY = 'tf_dirty_ts';
-const DIRTY_GRACE_MS = 30000; // 30 วินาทีหลัง save ล่าสุด ไม่ให้ GAS เขียนทับ
+const DIRTY_GRACE_MS = 30000; // 30s after a save: don't let a background GET overwrite it
+const TXN_KEYS = ['smallIncome', 'smallExpense', 'bigIncome', 'bigExpense'];
+const LIST_KEYS = ['donors', 'expenseItemsSmall'];
 
-let saveTimer = null;
-let storeDirty = false;
+// ---- sync status reporting (app.jsx shows toasts) ----
+let onSyncError = null; // fn(message)
+let onSyncInfo  = null; // fn(message)
+let lastSaveFailed = false;
 
-function gasFetch(signal) {
-  return fetch(SCRIPT_URL, { signal });
+function setSyncHandlers({ error, info }) {
+  onSyncError = error || null;
+  onSyncInfo = info || null;
 }
+
+// ---- helpers ----
 
 function safeStore(data) {
   return { ...DEFAULT_STORE, ...data };
 }
 
-async function loadStore(onUpdate) {
-  const raw = localStorage.getItem(CACHE_KEY);
-  if (raw) {
-    try {
-      const cached = safeStore(JSON.parse(raw));
-      storeDirty = false;
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 10000);
-      gasFetch(ctrl.signal)
-        .then(async res => {
-          clearTimeout(t);
-          const dirtyTs = Number(localStorage.getItem(DIRTY_TS_KEY) || 0);
-          const recentlySaved = Date.now() - dirtyTs < DIRTY_GRACE_MS;
-          if (!res.ok || storeDirty || recentlySaved) return;
-          const gas = await res.json();
-          const fresh = {
-            ...safeStore(gas),
-            // Keep cached lists if GAS doesn't provide them (pre-redeploy or old format)
-            donors: (gas.donors && gas.donors.length) ? gas.donors : cached.donors,
-            expenseItemsSmall: (gas.expenseItemsSmall && gas.expenseItemsSmall.length) ? gas.expenseItemsSmall : cached.expenseItemsSmall,
-          };
-          localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
-          onUpdate && onUpdate(fresh);
-        })
-        .catch(() => { clearTimeout(t); });
-      return cached;
-    } catch (e) {}
-  }
-
-  // No cache — must wait for GAS
-  try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 10000);
-    const res = await gasFetch(ctrl.signal);
-    clearTimeout(t);
-    if (res.ok) {
-      const data = safeStore(await res.json());
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-      return data;
-    }
-  } catch (e) {}
-  return DEFAULT_STORE;
+function parseStoreJSON(text) {
+  let json;
+  try { json = JSON.parse(text); } catch (e) { throw new Error('not JSON'); }
+  if (!json || typeof json !== 'object' || Array.isArray(json)) throw new Error('bad payload shape');
+  if (json.error) throw new Error('script error');
+  return safeStore(json);
 }
 
-let onSaveError = null;
-
-function onSaveErrorSet(fn) { onSaveError = fn; }
-
-function saveStore(data) {
-  storeDirty = true;
-  localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-  localStorage.setItem(DIRTY_TS_KEY, String(Date.now()));
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    try {
-      // Only sync transaction arrays — donors/expenseItemsSmall are managed via db.json
-      const txns = {
-        smallIncome: data.smallIncome,
-        smallExpense: data.smallExpense,
-        bigIncome: data.bigIncome,
-        bigExpense: data.bigExpense,
-      };
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(txns),
-      });
-    } catch (e) {
-      console.error('[saveStore] failed:', e);
-      onSaveError && onSaveError(e);
-    }
-  }, 400);
+async function gasGetJSON() {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(SCRIPT_URL, { signal: ctrl.signal, redirect: 'follow' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    // Google sometimes returns an HTML page (login/error) with HTTP 200 — reject it
+    if (!text || (text.charAt(0) !== '{' && text.charAt(0) !== '[')) throw new Error('non-JSON response');
+    return parseStoreJSON(text);
+  } finally {
+    clearTimeout(t);
+  }
 }
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
+
+// Union of local + remote by record id: nothing that exists on either side can
+// be lost. For the same id, local wins (edits happen locally first). Note: a
+// record deleted on this device can reappear if another device still has it —
+// that's the safe trade-off with the sheet's full-replace save semantics.
+function mergeStore(local, remote) {
+  const out = { ...local };
+  for (const key of TXN_KEYS) {
+    const map = new Map();
+    for (const r of (remote[key] || [])) map.set(r.id || uid(), r);
+    for (const r of (local[key]  || [])) map.set(r.id || uid(), r);
+    out[key] = Array.from(map.values()).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }
+  for (const key of LIST_KEYS) {
+    out[key] = [...(local[key] || []), ...(remote[key] || []).filter(x => !(local[key] || []).includes(x))];
+  }
+  return out;
+}
+
+// ---- load ----
+
+function loadStore(onUpdate) {
+  const raw = localStorage.getItem(CACHE_KEY);
+  let cached = null;
+  if (raw) {
+    try { cached = safeStore(JSON.parse(raw)); } catch (e) { cached = null; }
+  }
+
+  const syncPromise = gasGetJSON()
+    .then(gas => {
+      const dirtyTs = Number(localStorage.getItem(DIRTY_TS_KEY) || 0);
+      if (Date.now() - dirtyTs < DIRTY_GRACE_MS) return gas; // just saved; don't clobber
+      const fresh = cached ? mergeStore(cached, gas) : safeStore(gas);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+      storeDirty = false;
+      onUpdate && onUpdate(fresh);
+      onSyncInfo && onSyncInfo('ຊິ້ງຂໍ້ມູນຈາກ Google Sheets ສຳເລັດ');
+      return fresh;
+    })
+    .catch(err => {
+      const msg = err && err.message ? err.message : 'network';
+      if (cached) {
+        onSyncError && onSyncError('ດຶງຂໍ້ມູນໃໝ່ບໍ່ສຳເລັດ — ກຳລັງສະແດງຂໍ້ມູນທີ່ເກັບໄວ້ໃນເຄື່ອງນີ້ (' + msg + ')');
+      } else {
+        onSyncError && onSyncError('ບໍ່ສາມາດໂຫຼດຂໍ້ມູນຈາກ Google Sheets — ກວດສອບອິນເຕີເນັດ (' + msg + ')');
+      }
+      throw err;
+    });
+
+  if (cached) {
+    // Instant render from cache; the sync above updates via onUpdate when it lands
+    syncPromise.catch(() => {}); // rejection already reported via onSyncError
+    return Promise.resolve(cached);
+  }
+
+  return syncPromise.catch(() => safeStore(DEFAULT_STORE));
+}
+
+// ---- save ----
+
+let saveTimer = null;
+let storeDirty = false;
+let currentData = safeStore(DEFAULT_STORE);
+let saveInFlight = false;
+
+function saveStore(data) {
+  currentData = safeStore(data);
+  storeDirty = true;
+  localStorage.setItem(CACHE_KEY, JSON.stringify(currentData));
+  localStorage.setItem(DIRTY_TS_KEY, String(Date.now()));
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 400);
+}
+
+async function doSave() {
+  if (saveInFlight) { saveTimer = setTimeout(doSave, 600); return; }
+  saveInFlight = true;
+  const snapshot = currentData;
+  try {
+    // 1. Pull current sheet state first, so a stale device can't wipe newer
+    //    records saved from another device. If the pull fails, do NOT write
+    //    blind — writing a full snapshot unverified is how data gets erased.
+    const remote = await gasGetJSON();
+
+    // 2. A newer edit landed while fetching — let its own save cycle run.
+    if (currentData !== snapshot) return;
+
+    const payload = mergeStore(snapshot, remote);
+
+    // 3. Only sync transaction arrays — donors/expenseItemsSmall are managed via db.json
+    const body = {
+      smallIncome: payload.smallIncome,
+      smallExpense: payload.smallExpense,
+      bigIncome: payload.bigIncome,
+      bigExpense: payload.bigExpense,
+    };
+
+    // no-cors: the response is opaque, so afterwards we read the sheet back
+    // and verify the records actually landed. Retries cover Apps Script lag.
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body),
+    });
+
+    let verified = false;
+    for (let attempt = 0; attempt < 3 && !verified; attempt++) {
+      await new Promise(r => setTimeout(r, 2000));
+      try {
+        const saved = await gasGetJSON();
+        verified = TXN_KEYS.every(k => (saved[k] || []).length >= (payload[k] || []).length);
+      } catch (e2) { /* verify read failed — try again */ }
+    }
+    if (!verified) throw new Error('sheet did not accept the save (verification failed)');
+
+    if (currentData === snapshot) {
+      storeDirty = false;
+      localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+      if (lastSaveFailed) onSyncInfo && onSyncInfo('ບັນທຶກສຳເລັດແລ້ວ');
+    }
+    lastSaveFailed = false;
+  } catch (e) {
+    lastSaveFailed = true;
+    console.error('[saveStore] failed:', e);
+    // storeDirty stays true — the next save retries with fresh data
+    onSyncError && onSyncError('ບັນທຶກບໍ່ສຳເລັດ — ຂໍ້ມູນຍັງຢູ່ໃນເຄື່ອງນີ້ ຈະລອງອີກຄັ້ງເມື່ອບັນທຶກຕໍ່ (' + (e && e.message ? e.message : 'network') + ')');
+  } finally {
+    saveInFlight = false;
+  }
+}
+
+// ---- formatting utilities ----
 
 function fmt(n) {
   if (!n) return '0';
@@ -135,5 +223,5 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-window.TF = { CURRENCIES, loadStore, saveStore, onSaveErrorSet, uid, fmt, fmtDate, sumCurr, ymKey, ymLabel, todayISO };
+window.TF = { CURRENCIES, loadStore, saveStore, setSyncHandlers, uid, fmt, fmtDate, sumCurr, ymKey, ymLabel, todayISO };
 })();

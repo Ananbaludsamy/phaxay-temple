@@ -2,3 +2,5 @@ node_modules/
 server.js
 package.json
 package-lock.json
+gas_dump.json
+server.log
