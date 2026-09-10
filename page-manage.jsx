@@ -68,6 +68,8 @@ function SmallIncomePage({ store, setStore, toast }) {
     }, 5000);
     setPendingDelete(null);
   };
+
+  const totals = sumCurr(store.smallIncome);
   const q = search.trim().toLowerCase();
   const rows = q ? store.smallIncome.filter(r =>
     r.donor.toLowerCase().includes(q) || r.date.includes(q)
@@ -275,8 +277,6 @@ function SmallExpensePage({ store, setStore, toast }) {
     setPendingDelete(null);
   };
 
-  const totals = sumCurr(store.smallIncome);
-  const totalsExp = sumCurr(store.smallExpense);
   const q = search.trim().toLowerCase();
   const rows = q ? store.smallExpense.filter(r =>
     r.item.toLowerCase().includes(q) || r.date.includes(q)
