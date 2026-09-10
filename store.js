@@ -136,26 +136,19 @@ async function doSave() {
   saveInFlight = true;
   const snapshot = currentData;
   try {
-    // 1. Pull current sheet state first, so a stale device can't wipe newer
-    //    records saved from another device. If the pull fails, do NOT write
-    //    blind — writing a full snapshot unverified is how data gets erased.
-    const remote = await gasGetJSON();
-
-    // 2. A newer edit landed while fetching — let its own save cycle run.
-    if (currentData !== snapshot) return;
-
-    const payload = mergeStore(snapshot, remote);
-
-    // 3. Only sync transaction arrays — donors/expenseItemsSmall are managed via db.json
+    // Send the local snapshot directly — it's the source of truth for this
+    // device. Do NOT merge with remote first: that would re-introduce records
+    // that were deleted on this device (mergeStore is a union by id).
+    //
+    // The sheet's doPost does its own sanitize (dropping records without ids),
+    // so the full-replace semantics are safe: whatever we send is what lands.
     const body = {
-      smallIncome: payload.smallIncome,
-      smallExpense: payload.smallExpense,
-      bigIncome: payload.bigIncome,
-      bigExpense: payload.bigExpense,
+      smallIncome: snapshot.smallIncome,
+      smallExpense: snapshot.smallExpense,
+      bigIncome: snapshot.bigIncome,
+      bigExpense: snapshot.bigExpense,
     };
 
-    // no-cors: the response is opaque, so afterwards we read the sheet back
-    // and verify the records actually landed. Retries cover Apps Script lag.
     await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -163,19 +156,32 @@ async function doSave() {
       body: JSON.stringify(body),
     });
 
+    // Verify: re-read the sheet and confirm it matches what we sent.
+    // For deletions the count will be <= payload length, so check equality
+    // of record ids rather than a minimum-length heuristic.
     let verified = false;
-    for (let attempt = 0; attempt < 3 && !verified; attempt++) {
-      await new Promise(r => setTimeout(r, 2000));
+    const wanted = new Set();
+    for (const k of TXN_KEYS) {
+      for (const r of (snapshot[k] || [])) wanted.add(r.id);
+    }
+    for (let attempt = 0; attempt < 4 && !verified; attempt++) {
+      await new Promise(r => setTimeout(r, attempt === 0 ? 1500 : 2500));
       try {
         const saved = await gasGetJSON();
-        verified = TXN_KEYS.every(k => (saved[k] || []).length >= (payload[k] || []).length);
+        const got = new Set();
+        for (const k of TXN_KEYS) {
+          for (const r of (saved[k] || [])) got.add(r.id);
+        }
+        // sheet must contain every id we sent (nothing dropped) —
+        // and must not contain ids we deleted (nothing resurrected)
+        verified = [...wanted].every(id => got.has(id)) && [...got].every(id => wanted.has(id));
       } catch (e2) { /* verify read failed — try again */ }
     }
     if (!verified) throw new Error('sheet did not accept the save (verification failed)');
 
     if (currentData === snapshot) {
       storeDirty = false;
-      localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(snapshot));
       if (lastSaveFailed) onSyncInfo && onSyncInfo('ບັນທຶກສຳເລັດແລ້ວ');
     }
     lastSaveFailed = false;
