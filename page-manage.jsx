@@ -275,7 +275,8 @@ function SmallExpensePage({ store, setStore, toast }) {
     setPendingDelete(null);
   };
 
-  const totals = sumCurr(store.smallExpense);
+  const totals = sumCurr(store.smallIncome);
+  const totalsExp = sumCurr(store.smallExpense);
   const q = search.trim().toLowerCase();
   const rows = q ? store.smallExpense.filter(r =>
     r.item.toLowerCase().includes(q) || r.date.includes(q)
@@ -290,7 +291,7 @@ function SmallExpensePage({ store, setStore, toast }) {
         <p>ບັນທຶກຄ່າໃຊ້ຈ່າຍປະຈຳວັນຂອງວັດ</p>
       </div>
 
-      <CurrencyStrip totals={totals} subLabel="ຍອດລວມທີ່ຈ່າຍໄປ" />
+      <CurrencyStrip totals={totalsExp} subLabel="ຍອດລວມທີ່ຈ່າຍໄປ" />
 
       <div className="section">
         <div className="s-head">
@@ -351,7 +352,7 @@ function SmallExpensePage({ store, setStore, toast }) {
                 name: 'ຄັງນ້ອຍ ລາຍຈ່າຍ',
                 headers: ['#', 'ວັນທີ', 'ລາຍການ', 'ຈຳນວນ', 'ກີບ (₭)', 'ບາດ (฿)', 'ໂດລາ ($)', 'ຢວນ (¥)'],
                 rows: rows.map((r, i) => [i + 1, fmtDate(r.date), r.item, r.qty, r.kip, r.baht, r.usd, r.yuan]),
-                totalsRow: ['', 'ລວມ', '', '', totals.kip, totals.baht, totals.usd, totals.yuan],
+                totalsRow: ['', 'ລວມ', '', '', totalsExp.kip, totalsExp.baht, totalsExp.usd, totalsExp.yuan],
               }])}>
                 <Icon.excel /> Excel
               </button>
