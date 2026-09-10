@@ -48,13 +48,26 @@ function SmallIncomePage({ store, setStore, toast }) {
     cancelEdit();
   };
 
+  const [undoNode, showUndo] = useUndoToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+
   const remove = (id) => {
-    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
-    setStore({ ...store, smallIncome: store.smallIncome.filter(r => r.id !== id) });
-    toast('ລຶບລາຍການແລ້ວ');
+    const row = store.smallIncome.find(r => r.id === id);
+    setPendingDelete({ id, row, list: 'smallIncome' });
+    setConfirmOpen(true);
   };
 
-  const totals = sumCurr(store.smallIncome);
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const { id, row, list } = pendingDelete;
+    setStore({ ...store, [list]: store[list].filter(r => r.id !== id) });
+    setConfirmOpen(false);
+    showUndo('ລຶບລາຍການແລ້ວ — ກົດ ຍົກບັນທຶກໃໝ້ ພ້ອມກັນ', () => {
+      setStore({ ...store, [list]: [...store[list], row] });
+    }, 5000);
+    setPendingDelete(null);
+  };
   const q = search.trim().toLowerCase();
   const rows = q ? store.smallIncome.filter(r =>
     r.donor.toLowerCase().includes(q) || r.date.includes(q)
@@ -175,6 +188,17 @@ function SmallIncomePage({ store, setStore, toast }) {
             <Pager total={rows.length} page={page} onPage={setPage} />
           </>
         )}
+        {undoNode}
+        <ConfirmDialog
+          open={confirmOpen}
+          title="ລຶບລາຍການ?"
+          message="ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? ການລຶບແມ່ນບໍ່ສາມາດກຳເລີດໄດ້."
+          confirmLabel="ລຶບ"
+          cancelLabel="ຍົກເບື້ອງ"
+          danger
+          onConfirm={confirmDelete}
+          onCancel={() => { setConfirmOpen(false); setPendingDelete(null); }}
+        />
       </div>
     </div>
   );
@@ -230,10 +254,25 @@ function SmallExpensePage({ store, setStore, toast }) {
     cancelEdit();
   };
 
+  const [undoNode, showUndo] = useUndoToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+
   const remove = (id) => {
-    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
-    setStore({ ...store, smallExpense: store.smallExpense.filter(r => r.id !== id) });
-    toast('ລຶບລາຍການແລ້ວ');
+    const row = store.smallExpense.find(r => r.id === id);
+    setPendingDelete({ id, row, list: 'smallExpense' });
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const { id, row, list } = pendingDelete;
+    setStore({ ...store, [list]: store[list].filter(r => r.id !== id) });
+    setConfirmOpen(false);
+    showUndo('ລຶບລາຍການແລ້ວ — ກົດ ຍົກບັນທຶກໃໝ້ ພ້ອມກັບ', () => {
+      setStore({ ...store, [list]: [...store[list], row] });
+    }, 5000);
+    setPendingDelete(null);
   };
 
   const totals = sumCurr(store.smallExpense);
@@ -364,6 +403,17 @@ function SmallExpensePage({ store, setStore, toast }) {
             <Pager total={rows.length} page={page} onPage={setPage} />
           </>
         )}
+        {undoNode}
+        <ConfirmDialog
+          open={confirmOpen}
+          title="ລຶບລາຍການ?"
+          message="ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? ການລຶບແມ່ນບໍ່ສາມາດກຳເລີດໄດ້."
+          confirmLabel="ລຶບ"
+          cancelLabel="ຍົກເບື້ອງ"
+          danger
+          onConfirm={confirmDelete}
+          onCancel={() => { setConfirmOpen(false); setPendingDelete(null); }}
+        />
       </div>
     </div>
   );
@@ -410,10 +460,25 @@ function BigIncomePage({ store, setStore, toast }) {
     cancelEdit();
   };
 
+  const [undoNode, showUndo] = useUndoToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+
   const remove = (id) => {
-    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
-    setStore({ ...store, bigIncome: store.bigIncome.filter(r => r.id !== id) });
-    toast('ລຶບລາຍການແລ້ວ');
+    const row = store.bigIncome.find(r => r.id === id);
+    setPendingDelete({ id, row, list: 'bigIncome' });
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const { id, row, list } = pendingDelete;
+    setStore({ ...store, [list]: store[list].filter(r => r.id !== id) });
+    setConfirmOpen(false);
+    showUndo('ລຶບລາຍການແລ້ວ — ກົດ ຍົກບັນທຶກໃໝ້ ພ້ອມກັບ', () => {
+      setStore({ ...store, [list]: [...store[list], row] });
+    }, 5000);
+    setPendingDelete(null);
   };
 
   const totals = sumCurr(store.bigIncome);
@@ -526,6 +591,17 @@ function BigIncomePage({ store, setStore, toast }) {
             <Pager total={rows.length} page={page} onPage={setPage} />
           </>
         )}
+        {undoNode}
+        <ConfirmDialog
+          open={confirmOpen}
+          title="ລຶບລາຍການ?"
+          message="ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? ການລຶບແມ່ນບໍ່ສາມາດກຳເລີດໄດ້."
+          confirmLabel="ລຶບ"
+          cancelLabel="ຍົກເບື້ອງ"
+          danger
+          onConfirm={confirmDelete}
+          onCancel={() => { setConfirmOpen(false); setPendingDelete(null); }}
+        />
       </div>
     </div>
   );
@@ -574,10 +650,25 @@ function BigExpensePage({ store, setStore, toast }) {
     cancelEdit();
   };
 
+  const [undoNode, showUndo] = useUndoToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+
   const remove = (id) => {
-    if (!window.confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?')) return;
-    setStore({ ...store, bigExpense: store.bigExpense.filter(r => r.id !== id) });
-    toast('ລຶບລາຍການແລ້ວ');
+    const row = store.bigExpense.find(r => r.id === id);
+    setPendingDelete({ id, row, list: 'bigExpense' });
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const { id, row, list } = pendingDelete;
+    setStore({ ...store, [list]: store[list].filter(r => r.id !== id) });
+    setConfirmOpen(false);
+    showUndo('ລຶບລາຍການແລ້ວ — ກົດ ຍົກບັນທຶກໃໝ້ ພ້ອມກັບ', () => {
+      setStore({ ...store, [list]: [...store[list], row] });
+    }, 5000);
+    setPendingDelete(null);
   };
 
   const totals = sumCurr(store.bigExpense);
@@ -697,9 +788,23 @@ function BigExpensePage({ store, setStore, toast }) {
             <Pager total={rows.length} page={page} onPage={setPage} />
           </>
         )}
+        {undoNode}
+        <ConfirmDialog
+          open={confirmOpen}
+          title="ລຶບລາຍການ?"
+          message="ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? ການລຶບແມ່ນບໍ່ສາມາດກຳເລີດໄດ້."
+          confirmLabel="ລຶບ"
+          cancelLabel="ຍົກເບື້ອງ"
+          danger
+          onConfirm={confirmDelete}
+          onCancel={() => { setConfirmOpen(false); setPendingDelete(null); }}
+        />
       </div>
     </div>
   );
 }
+
+// Shared: ConfirmDialog + useUndoToast (imported via components.jsx)
+const ConfirmDialog = window.ConfirmDialog;
 
 Object.assign(window, { SmallIncomePage, SmallExpensePage, BigIncomePage, BigExpensePage });

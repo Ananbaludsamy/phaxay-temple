@@ -671,8 +671,69 @@ input, select, textarea { font-family: inherit; font-size: 16px; color: var(--in
 }
 .search-clear:hover { background: var(--line); color: var(--ink); }
 
-/* ======= Helpers ======= */
-.tab-row {
+/* ======= Confirm dialog ======= */
+.confirm-box {
+  background: #FFFCF3;
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  max-width: 320px;
+  width: 90vw;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.4);
+}
+.confirm-icon {
+  width: 52px; height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  display: grid; place-items: center;
+  color: var(--primary);
+}
+.confirm-title {
+  font-family: 'Phetsarath', sans-serif;
+  font-size: 18px; font-weight: 600; color: var(--ink);
+  margin-bottom: 6px;
+}
+.confirm-msg {
+  font-size: 14px; color: var(--ink-2);
+  margin-bottom: 20px; line-height: 1.5;
+}
+.confirm-actions {
+  display: flex; gap: 10px; justify-content: center;
+}
+.confirm-actions .btn { min-width: 120px; }
+
+/* ======= Undo toast ======= */
+.undo-toast {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: 24px;
+  background: #2A1F14;
+  color: #FFF8E8;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+  z-index: 100;
+  display: flex; align-items: center; gap: 14px;
+  animation: toastIn .3s cubic-bezier(.2,.7,.2,1);
+}
+.undo-msg { flex: 1; }
+.undo-btn {
+  background: var(--gold);
+  color: var(--primary);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+.undo-btn:active { transform: scale(.97); }
+.undo-btn svg { width: 14px; height: 14px; } {
   display: flex; gap: 6px;
   background: var(--surface);
   border: 1px solid var(--line);

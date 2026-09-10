@@ -163,6 +163,64 @@ function useToast() {
   return [node, setT];
 }
 
+// ===== Confirm dialog (custom modal, themed) =====
+function ConfirmDialog({ open, title, message, confirmLabel, cancelLabel, onConfirm, onCancel, danger }) {
+  if (!open) return null;
+  return (
+    <div className="img-modal" onClick={onCancel}>
+      <div className="confirm-box" onClick={e => e.stopPropagation()}>
+        <div className="confirm-icon">
+          <Icon.trash />
+        </div>
+        <div className="confirm-title">{title}</div>
+        <div className="confirm-msg">{message}</div>
+        <div className="confirm-actions">
+          <button className={`btn ${danger ? '' : 'ghost'}`} onClick={onConfirm}>
+            {confirmLabel}
+          </button>
+          <button className="btn ghost" onClick={onCancel}>
+            {cancelLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Undo toast (replaces useToast when a delete happens) =====
+function useUndoToast() {
+  const [state, setState] = useState(null); // null | { msg, undoFn, ttl }
+  const timerRef = useRef(null);
+
+  const show = (msg, undoFn, ttl = 5000) => {
+    setState({ msg, undoFn, ttl });
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setState(null), ttl);
+  };
+
+  const undo = () => {
+    if (state && state.undoFn) {
+      state.undoFn();
+      setState(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
+  const node = state ? (
+    <div className="undo-toast">
+      <div className="undo-msg">{state.msg}</div>
+      <button className="undo-btn" onClick={undo}>
+        <Icon.edit /> ຍົກບັນທຶກໃໝ່
+      </button>
+    </div>
+  ) : null;
+
+  return [node, show];
+}
+
 // ===== Pagination =====
 const PER_PAGE = 10;
 
@@ -204,4 +262,5 @@ function exportXLSX(filename, sheets) {
   XLSX.writeFile(wb, filename);
 }
 
-Object.assign(window, { Icon, CurrencyStrip, CurrencyInput, AmountFields, Empty, useToast, Pager, PER_PAGE, exportXLSX });
+Object.assign(window, { Icon, CurrencyStrip, CurrencyInput, AmountFields, Empty, useToast, useUndoToast, ConfirmDialog, Pager, PER_PAGE, exportXLSX });
+
